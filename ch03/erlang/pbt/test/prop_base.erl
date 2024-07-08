@@ -11,11 +11,19 @@ prop_last() ->
       KnownLast =:= lists:last(KnownList)
     end).
 
+prop_symmetric() ->
+  ?FORALL(Data, list({atom(), any()}),
+    begin
+      Encoded = encode(Data),
+      is_binary(Encoded) andalso Data =:= decode(Encoded)
+    end).
+
 %%%%%%%%%%%%%%%
 %%% Helpers %%%
 %%%%%%%%%%%%%%%
-model_biggest(List) ->
-  lists:last(lists:sort(List)).
+encode(T) -> term_to_binary(T).
+
+decode(T) -> binary_to_term(T).
 
 %%%%%%%%%%%%%%%%%%
 %%% Generators %%%

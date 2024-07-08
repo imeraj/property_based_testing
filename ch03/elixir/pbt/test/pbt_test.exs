@@ -42,17 +42,26 @@ defmodule PbtTest do
     end
   end
 
-  def is_ordered([a, b | t]) do
+  property "symmetric encoding/decoding" do
+    forall data <- list({atom(), any()}) do
+        encoded = encode(data)
+       is_binary(encoded) and data == decode(encoded)
+    end
+  end
+
+
+  # Helpers
+  def model_biggest(list), do: List.last(Enum.sort(list))
+
+  def encode(t), do: :erlang.term_to_binary(t)
+    def decode(t), do: :erlang.binary_to_term(t)
+
+    def is_ordered([a, b | t]) do
     a <= b and is_ordered([b | t])
   end
 
   # lists with fewer than 2 elements
-  def is_ordered(_) do
-    true
-  end
-
-  # Helpers
-  def model_biggest(list), do: List.last(Enum.sort(list))
+  def is_ordered(_), do: true
 
   # Generators
 end
