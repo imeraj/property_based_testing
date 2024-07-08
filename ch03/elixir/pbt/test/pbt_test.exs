@@ -9,6 +9,13 @@ defmodule PbtTest do
     end
   end
 
+  property "picks the last number" do
+    forall {list, known_last} <- {list(number()), number()} do
+      known_list = list ++ [known_last]
+      known_last == List.last(known_list)
+    end
+  end
+
   # Helpers
   def model_biggest(list), do: List.last(Enum.sort(list))
 
