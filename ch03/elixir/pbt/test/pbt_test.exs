@@ -16,6 +16,41 @@ defmodule PbtTest do
     end
   end
 
+  property "a sorted list has ordered pairs" do
+    forall list <- list(term()) do
+      is_ordered(Enum.sort(list))
+    end
+  end
+
+  property "a sorted list keeps its size" do
+    forall list <- list(number()) do
+      length(list) == length(Enum.sort(list))
+    end
+  end
+
+  property "no element added in a sorted list" do
+    forall list <- list(number()) do
+      sorted_list = Enum.sort(list)
+      Enum.all?(sorted_list, & &1 in list)
+    end
+  end
+
+  property "no element deleted from original list" do
+    forall list <- list(number()) do
+      sorted_list = Enum.sort(list)
+      Enum.all?(list, & &1 in sorted_list)
+    end
+  end
+
+  def is_ordered([a, b | t]) do
+    a <= b and is_ordered([b | t])
+  end
+
+  # lists with fewer than 2 elements
+  def is_ordered(_) do
+    true
+  end
+
   # Helpers
   def model_biggest(list), do: List.last(Enum.sort(list))
 
