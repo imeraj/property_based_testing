@@ -12,11 +12,21 @@ prop_dupes() ->
      true
     end).
 
+prop_collect1() ->
+  ?FORALL(Bin, binary(), collect(byte_size(Bin), is_binary(Bin))).
+
+prop_collect2() -> ?FORALL(Bin, binary(),
+  collect(to_range(10, byte_size(Bin)), is_binary(Bin))).
+
 %%%%%%%%%%%%%%%
 %%% Helpers %%%
 %%%%%%%%%%%%%%%
 key() -> integer().
 val() -> term().
+
+to_range(M, N) ->
+  Base = N div M,
+  {Base*M, (Base+1)*M}.
 
 %%%%%%%%%%%%%%%%%%
 %%% Generators %%%
