@@ -22,11 +22,35 @@ prop_aggregate() ->
   Suits = [club, diamond, heart, spade],
   ?FORALL(Hand, vector(5, {oneof(Suits), choose(1, 13)}), aggregate(Hand, true)).
 
+prop_escape() ->
+  ?FORALL(Str, string(), aggregate(classes(Str), escape(Str))).
+
 %%%%%%%%%%%%%%%
 %%% Helpers %%%
 %%%%%%%%%%%%%%%
 key() -> oneof([range(1, 10), integer()]).
 val() -> term().
+
+escape(_) -> true.
+
+classes(Str) ->
+  L = letters(Str),
+  N = numbers(Str),
+  P = punctuation(Str),
+  O = length(Str) - (L+N+P),
+  [{letters, to_range(5, L)},{numbers, to_range(5, N)},
+    {punctuation, to_range(5, P)},{others, to_range(5, O)}].
+
+letters(Str) ->
+  length([1 || Char <- Str,
+    (Char >= $A andalso Char =< $Z) orelse
+    (Char >= $a andalso Char =< $z)]).
+
+numbers(Str) ->
+  length([1 || Char <- Str, Char >= $0 andalso Char =< $9]).
+
+punctuation(Str) ->
+  length([1 || Char <- Str, lists:member(Char, ".,;:'\"-")]).
 
 to_range(M, N) ->
   Base = N div M,
