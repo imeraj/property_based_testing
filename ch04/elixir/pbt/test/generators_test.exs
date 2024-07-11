@@ -31,6 +31,13 @@ defmodule GeneratorsTest do
     end
   end
 
+  property "aggregate", [:verbose] do
+    suits = [:club, :diamond, :heart, :spade]
+    forall hand <- vector(5, {oneof(suits), choose(1,13)}) do
+      aggregate(true, hand)
+    end
+  end
+
   # Helpers
   def key(), do: oneof([range(1,10), integer()])
   def val(), do: term()
