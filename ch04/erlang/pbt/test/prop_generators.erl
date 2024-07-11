@@ -9,7 +9,7 @@ prop_dupes() ->
     begin
      M = maps:from_list(KV),
      [maps:get(K, M) || {K, _V} <- KV],
-     true
+     collect({dupes, to_range(5, length(KV) - length(lists:ukeysort(1, KV)))}, true)
     end).
 
 prop_collect1() ->
@@ -21,7 +21,7 @@ prop_collect2() -> ?FORALL(Bin, binary(),
 %%%%%%%%%%%%%%%
 %%% Helpers %%%
 %%%%%%%%%%%%%%%
-key() -> integer().
+key() -> oneof([range(1, 10), integer()]).
 val() -> term().
 
 to_range(M, N) ->

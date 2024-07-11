@@ -3,11 +3,17 @@ defmodule GeneratorsTest do
   use PropCheck
 
   # Properties
-  property "find all keys in a map even when dupes are used" do
+  property "find all keys in a map even when dupes are used",  [:verbose] do
     forall kv <- list({key(), val()}) do
       m = Map.new(kv)
       for {k, _v} <- kv, do: Map.fetch!(m, k)
-      true
+
+      uniques =
+        kv
+        |> List.keysort(0)
+        |> Enum.dedup_by(&elem(&1, 0))
+
+      collect(true, {:dupes, to_range(5, length(kv) - length(uniques))})
     end
   end
 
@@ -26,12 +32,13 @@ defmodule GeneratorsTest do
   end
 
   # Helpers
-  def key(), do: integer()
+  def key(), do: oneof([range(1,10), integer()])
   def val(), do: term()
 
   def to_range(m, n) do
     base = div(n, m)
     {base * m, (base + 1) * m}
   end
+
   # Generators
 end
