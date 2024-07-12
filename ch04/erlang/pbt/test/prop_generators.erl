@@ -15,7 +15,7 @@ prop_dupes() ->
 prop_collect1() ->
   ?FORALL(Bin, binary(), collect(byte_size(Bin), is_binary(Bin))).
 
-prop_collect2() -> ?FORALL(Bin, binary(),
+prop_collect2() -> ?FORALL(Bin, resize(150, binary()),
   collect(to_range(10, byte_size(Bin)), is_binary(Bin))).
 
 prop_aggregate() ->

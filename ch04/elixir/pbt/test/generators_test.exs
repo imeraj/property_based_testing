@@ -25,7 +25,7 @@ defmodule GeneratorsTest do
   end
 
   property "collect 2", [:verbose] do
-    forall bin <- binary() do
+    forall bin <- resize(150, binary()) do
       #    test                   metric
       collect(is_binary(bin), to_range(10, byte_size(bin)))
     end
