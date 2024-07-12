@@ -69,6 +69,25 @@ defmodule GeneratorsTest do
     end
   end
 
+  property "naive queue generation" do
+    forall list <- list({term(), term()}) do
+      q = :queue.from_list(list)
+      :queue.is_queue(q)
+    end
+  end
+
+  property "queue with let macro" do
+    forall q <- queue() do
+      :queue.is_queue(q)
+    end
+  end
+
+  def queue() do
+    let list <- list({term(), term()}) do
+      :queue.from_list(list)
+    end
+  end
+
   # Helpers
   defp key(), do: oneof([range(1, 10), integer()])
   defp val(), do: term()

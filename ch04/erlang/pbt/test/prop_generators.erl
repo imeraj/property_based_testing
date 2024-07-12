@@ -45,6 +45,19 @@ prop_profile2() ->
       aggregate([{name, NameLen}, {bio, BioLen}], true)
     end).
 
+prop_queue_naive() ->
+  ?FORALL(List, list({term(), term()}),
+    begin
+      Queue = queue:from_list(List),
+      queue:is_queue(Queue)
+    end).
+
+prop_queue_nicer() ->
+  ?FORALL(Queue, queue(),
+    begin
+      queue:is_queue(Queue)
+    end).
+
 %%%%%%%%%%%%%%%
 %%% Helpers %%%
 %%%%%%%%%%%%%%%
@@ -79,3 +92,6 @@ to_range(M, N) ->
 %%%%%%%%%%%%%%%%%%
 %%% Generators %%%
 %%%%%%%%%%%%%%%%%%
+queue() ->
+  ?LET(List, list({term(), term()}),
+      queue:from_list(List)).
