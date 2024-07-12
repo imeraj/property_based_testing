@@ -45,6 +45,18 @@ defmodule GeneratorsTest do
     end
   end
 
+  property "profile 1", [:verbose] do
+    forall profile <- [
+             name: resize(10, utf8()),
+             age: pos_integer(),
+             bio: resize(350, utf8())
+           ] do
+      name_len = to_range(10, String.length(profile[:name]))
+      bio_len = to_range(350, String.length(profile[:bio]))
+      aggregate(true, name: name_len, bio: bio_len)
+    end
+  end
+
   # Helpers
   defp key(), do: oneof([range(1, 10), integer()])
   defp val(), do: term()
