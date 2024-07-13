@@ -1,7 +1,7 @@
 -module(prop_generators).
 -include_lib("proper/include/proper.hrl").
 
--export([even/0, odd/0]).
+-export([even/0, odd/0, text_like/0, mostly_sorted/0]).
 
 %%%%%%%%%%%%%%%%%%
 %%% Properties %%%
@@ -103,3 +103,23 @@ even() ->
 
 odd() ->
   ?SUCHTHAT(N, integer(), N rem 2 =/= 0).
+
+text_like() ->
+  list(frequency([
+    {80, range($a, $z)},
+    {10, $\s},
+    {1, $\n},
+    {1, oneof([$., $-, $!, $?, $,])},
+    {1, range($0, $9)}
+  ])).
+
+mostly_sorted() ->
+  ?LET(Lists,
+    list(frequency([
+      {5, sorted_list()},
+      {1, list(integer())}
+    ])),
+    lists:append(Lists)).
+
+sorted_list() ->
+  ?LET(List, list(integer()), lists:sort(List)).

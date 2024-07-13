@@ -129,6 +129,37 @@ defmodule GeneratorsTest do
     end
   end
 
-  def even(), do: such_that n <- integer(), when: rem(n, 2) == 0
-  def odd(), do: such_that n <- integer(), when: rem(n, 2) != 0
+  def even(), do: such_that(n <- integer(), when: rem(n, 2) == 0)
+  def odd(), do: such_that(n <- integer(), when: rem(n, 2) != 0)
+
+  def text_like() do
+    let l <-
+          list(
+            frequency([
+              {80, range(?a, ?z)},
+              {10, ?\s},
+              {1, ?\n},
+              {1, oneof([?., ?-, ?!, ??, ?,])},
+              {1, range(?0, ?9)}
+            ])
+          ) do
+      to_string(l)
+    end
+  end
+
+  def mostly_sorted() do
+    gen =
+      list(
+        frequency([
+          {5, sorted_list()},
+          {1, list(integer())}
+        ])
+      )
+
+    let(lists <- gen, do: Enum.concat(lists))
+  end
+
+  def sorted_list() do
+    let(l <- list(integer()), do: Enum.sort(l))
+  end
 end
