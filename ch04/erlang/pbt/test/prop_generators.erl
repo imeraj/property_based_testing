@@ -1,6 +1,8 @@
 -module(prop_generators).
 -include_lib("proper/include/proper.hrl").
 
+-export([even/0, odd/0]).
+
 %%%%%%%%%%%%%%%%%%
 %%% Properties %%%
 %%%%%%%%%%%%%%%%%%
@@ -95,3 +97,9 @@ to_range(M, N) ->
 queue() ->
   ?LET(List, list({term(), term()}),
       queue:from_list(List)).
+
+even() ->
+  ?SUCHTHAT(N, integer(), N rem 2 =:= 0).
+
+odd() ->
+  ?SUCHTHAT(N, integer(), N rem 2 =/= 0).

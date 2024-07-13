@@ -82,12 +82,6 @@ defmodule GeneratorsTest do
     end
   end
 
-  def queue() do
-    let list <- list({term(), term()}) do
-      :queue.from_list(list)
-    end
-  end
-
   # Helpers
   defp key(), do: oneof([range(1, 10), integer()])
   defp val(), do: term()
@@ -129,4 +123,12 @@ defmodule GeneratorsTest do
   end
 
   # Generators
+  defp queue() do
+    let list <- list({term(), term()}) do
+      :queue.from_list(list)
+    end
+  end
+
+  def even(), do: such_that n <- integer(), when: rem(n, 2) == 0
+  def odd(), do: such_that n <- integer(), when: rem(n, 2) != 0
 end
