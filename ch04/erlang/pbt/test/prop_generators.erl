@@ -60,6 +60,14 @@ prop_queue_nicer() ->
       queue:is_queue(Queue)
     end).
 
+prop_dict_gen() ->
+  ?FORALL(D, dict_gen(), dict:size() < 5).
+
+prop_dict_symb() ->
+  ?FORALL(Dsymb, dict_symb(), dict:size(eval(Dsymb)) < 5).
+
+prop_dict_autosymb() ->
+  ?FORALL(D, dict_autosymb(), dict:size(D) < 5).
 
 %%%%%%%%%%%%%%%
 %%% Helpers %%%
@@ -153,3 +161,21 @@ move(right, {X,Y}) -> {X+1,Y};
 move(up, {X,Y}) -> {X,Y+1};
 move(down, {X,Y}) -> {X,Y-1}.
 
+dict_gen() ->
+  ?LET(X, list({integer(), integer()}), dict:from_list(X)).
+
+dict_symb() ->
+  ?SIZED(Size, dict_symb(Size, {call, dict, new, []})).
+
+dict_symb(0, Dict) ->
+  Dict;
+dict_symb(N, Dict) ->
+  dict_symb(N-1, {call, dict, store, [integer(), integer(), Dict]}).
+
+dict_autosymb() ->
+  ?SIZED(Size, dict_autosymb(Size, {'$call', dict, new, []})).
+
+dict_autosymb(0, Dict) -> Dict;
+
+dict_autosymb(N, Dict) ->
+  dict_autosymb(N-1, {'$call', dict, store, [integer(), integer(), Dict]}).

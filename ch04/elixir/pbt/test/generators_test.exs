@@ -82,6 +82,24 @@ defmodule GeneratorsTest do
     end
   end
 
+  property "dict generator" do
+    forall d <- dict_gen() do
+      :dict.size(d) < 5
+    end
+  end
+
+  property "symbolic generator" do
+    forall d <- dict_symb() do
+      :proper_gen.eval(:dict.size(d)) < 5
+    end
+  end
+
+  property "automated symbolic generator" do
+    forall d <- dict_autosymb() do
+      :dict.size(d) < 5
+    end
+  end
+
   # Helpers
   defp key(), do: oneof([range(1, 10), integer()])
   defp val(), do: term()
@@ -189,4 +207,30 @@ defmodule GeneratorsTest do
   def move(:right, {x, y}), do: {x + 1, y}
   def move(:up, {x, y}), do: {x, y + 1}
   def move(:down, {x, y}), do: {x, y - 1}
+
+  def dict_gen() do
+    let(x <- list({integer(), integer()}), do: :dict.from_list(x))
+  end
+
+  def dict_symb(),
+    do: sized(size, dict_symb(size, {:call, :dict, :new, []}))
+
+  def dict_symb(0, dict), do: dict
+
+  def dict_symb(n, dict) do
+    dict_symb(n - 1, {:call, :dict, :store, [integer(), integer(), dict]})
+  end
+
+  def dict_autosymb() do
+    sized(size, dict_autosymb(size, {:"$call", :dict, :new, []}))
+  end
+
+  def dict_autosymb(0, dict), do: dict
+
+  def dict_autosymb(n, dict) do
+    dict_autosymb(
+      n - 1,
+      {:"$call", :dict, :store, [integer(), integer(), dict]}
+    )
+  end
 end
