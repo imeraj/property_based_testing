@@ -1,7 +1,7 @@
 -module(prop_generators).
 -include_lib("proper/include/proper.hrl").
 
--export([even/0, odd/0, text_like/0, mostly_sorted/0]).
+-export([even/0, odd/0, text_like/0, mostly_sorted/0, path/0]).
 
 %%%%%%%%%%%%%%%%%%
 %%% Properties %%%
@@ -59,6 +59,7 @@ prop_queue_nicer() ->
     begin
       queue:is_queue(Queue)
     end).
+
 
 %%%%%%%%%%%%%%%
 %%% Helpers %%%
@@ -123,3 +124,32 @@ mostly_sorted() ->
 
 sorted_list() ->
   ?LET(List, list(integer()), lists:sort(List)).
+
+path() ->
+  ?SIZED(Size, path(Size, {0,0}, [], #{{0,0} => seen}, [])).
+
+path(0, _Current, Acc, _Seen, _Ignore) ->
+  Acc;
+path(_Max, _Current, Acc, _Seen, [_,_,_,_]) ->
+  Acc;
+path(Max, Current, Acc, Seen, Ignore) ->
+  increase_path(Max, Current, Acc, Seen, Ignore).
+
+increase_path(Max, Current, Acc, Seen, Ignore) ->
+  DirectionGen = oneof([left, right, up, down] -- Ignore),
+  ?LET(Direction, DirectionGen,
+    begin
+      NewPos = move(Direction, Current),
+      case Seen of
+        #{NewPos := _} ->
+          path(Max, Current, Acc, Seen, [Direction|Ignore]);
+        _ ->
+          path(Max-1, NewPos, [Direction|Acc], Seen#{NewPos => seen}, [])
+      end
+    end).
+
+move(left, {X,Y}) -> {X-1, Y};
+move(right, {X,Y}) -> {X+1,Y};
+move(up, {X,Y}) -> {X,Y+1};
+move(down, {X,Y}) -> {X,Y-1}.
+
