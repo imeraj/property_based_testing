@@ -21,6 +21,7 @@ defmodule Bday.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:propcheck, "~> 1.4", only: [:test, :dev]}    ]
+      {:propcheck, "~> 1.4", only: [:test, :dev]}
+    ]
   end
 end
