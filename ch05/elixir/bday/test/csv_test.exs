@@ -60,4 +60,50 @@ defmodule CsvTest do
     ~c"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" ++
       ~c":;<=>?@ !#$%&'()*+-./[\\]^_`{|}~"
   end
+
+  ## Unit Tests ##
+  test "one column CSV files are inherently ambiguous" do
+    assert "\r\n\r\n" == Csv.encode([%{"" => ""}, %{"" => ""}])
+    assert [%{"" => ""}] == Csv.decode("\r\n\r\n")
+  end
+
+  test "one record per line" do
+    assert [%{"aaa" => "zzz", "bbb" => "yyy", "ccc" => "xxx"}] ==
+             Csv.decode("aaa,bbb,ccc\r\nzzz,yyy,xxx\r\n")
+  end
+
+  test "optional trailing CRLF" do
+    assert [%{"aaa" => "zzz", "bbb" => "yyy", "ccc" => "xxx"}] ==
+             Csv.decode("aaa,bbb,ccc\r\nzzz,yyy,xxx")
+  end
+
+  test "double quotes" do
+    assert [%{"aaa" => "zzz", "bbb" => "yyy", "ccc" => "xxx"}] ==
+             Csv.decode("\"aaa\",\"bbb\",\"ccc\"\r\nzzz,yyy,xxx")
+  end
+
+  test "escape CRLF" do
+    assert [%{"aaa" => "zzz", "b\r\nbb" => "yyy", "ccc" => "xxx"}] ==
+             Csv.decode("\"aaa\",\"b\r\nbb\",\"ccc\"\r\nzzz,yyy,xxx")
+  end
+
+  test "double quote escaping" do
+    # Since we decided headers are mandatory, this test adds a line
+    # with empty values (CLRF,,) to the example from the RFC.
+    assert [%{"aaa" => "", "b\"bb" => "", "ccc" => ""}] ==
+             Csv.decode("\"aaa\",\"b\"\"bb\",\"ccc\"\r\n,,")
+  end
+
+  # this counterexample is taken literally from the RFC and
+  # cannot work with the current implementation because maps
+  # do not allow duplicate keys
+  test "dupe keys unsupported" do
+    csv =
+      "field_name,field_name,field_name\r\n" <>
+        "aaa,bbb,ccc\r\n" <> "zzz,yyy,xxx\r\n"
+
+    [map1, map2] = Csv.decode(csv)
+    assert Map.keys(map1) == ["field_name"]
+    assert Map.keys(map2) == ["field_name"]
+  end
 end
