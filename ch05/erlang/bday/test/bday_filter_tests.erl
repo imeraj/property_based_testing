@@ -4,7 +4,7 @@
 %% Property
 bday_filter_test() ->
   Years = generate_years_data(2018, 2038),
-  People = generate_people_for_year(1),
+  People = generate_people_for_year(3),
   lists:foreach(fun(YearData) ->
       BirthDays = find_birthdays_for_year(People, YearData),
       every_birthday_once(People, BirthDays),
@@ -20,8 +20,8 @@ every_birthday_once(People, Birthdays) ->
   ?assertEqual([], FoundManyTimes).
 
 on_right_date(_People, Birthdays) ->
-  [calendar:valid_date({Y, PM, PD}) andalso ?assertEqual({M,D}, {PM,PD})
-    || {{Y,M,D}, Found} <- Birthdays, #{"date_of_birth" := {_, PM, PD}} <- Found].
+  [calendar:valid_date({Y, PM, PD}) andalso
+    ?assertEqual({M,D}, {PM,PD}) || {{Y,M,D}, Found} <- Birthdays, #{"date_of_birth" := {_, PM, PD}} <- Found].
 
 generate_years_data(End, End) ->
   [];
