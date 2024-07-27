@@ -11,6 +11,18 @@ defmodule EmployeeTest do
     end
   end
 
+  property "check that the date is formatted right" do
+    forall map <- raw_employee_map() do
+      case Employee.adapt_csv_result_shim(map) do
+        %{"date_of_birth" => %Date{}} ->
+          true
+
+        _ ->
+          false
+      end
+    end
+  end
+
   # Generators
   def raw_employee_map() do
     let prop_list <- [
