@@ -1,5 +1,5 @@
 -module(bday_employee).
--export([from_csv/1]).
+-export([from_csv/1, fetch/1, filter_birthday/2, last_name/1, first_name/1, date_of_birth/1, email/1]).
 
 -ifdef(TEST).
 -export([adapt_csv_result/1]).
@@ -9,9 +9,28 @@
 -opaque handle() :: {raw, [employee()]}.
 -export_type([handle/0, employee/0]).
 
+-spec fetch(handle()) -> [employee()].
+fetch({raw, Employees}) -> Employees.
+
 -spec from_csv(string()) -> handle().
 from_csv(String) ->
   {raw, [adapt_csv_result(Map) || Map <- bday_csv:decode(String)]}.
+
+-spec filter_birthday(handle(), calendar:date()) -> handle().
+filter_birthday({raw, Employees}, Date) ->
+  {raw, bday_filter:birthday(Employees, Date)}.
+
+-spec last_name(employee()) -> string | undefined.
+last_name(#{"last_name" := Name}) -> Name.
+
+-spec first_name(employee()) -> string | undefined.
+first_name(#{"first_name" := Name}) -> Name.
+
+-spec date_of_birth(employee()) -> calendar:date().
+date_of_birth(#{"date_of_birth" := DoB}) -> DoB.
+
+-spec email(employee()) -> string | undefined.
+email(#{"email" := Email}) -> Email.
 
 -spec adapt_csv_result(map()) -> employee().
 adapt_csv_result(Map) ->

@@ -18,6 +18,22 @@ prop_fix_csv_date_of_birth() ->
       _ -> false
     end).
 
+prop_handle_access() ->
+  ?FORALL(Maps, non_empty(list(raw_employee_map())),
+    begin
+      CSV = bday_csv:encode(Maps),
+      Handle = bday_employee:from_csv(CSV),
+      Filtered = bday_employee:filter_birthday(Handle, date()),
+      ListFull = bday_employee:fetch(Handle),
+      true = is_list(bday_employee:fetch(Filtered)),
+      _  = [
+            {bday_employee:first_name(X),
+            bday_employee:last_name(X),
+            bday_employee:email(X),
+            bday_employee:date_of_birth(X)} || X <- ListFull],
+      true
+    end).
+
 %% Generators
 raw_employee_map() ->
   ?LET(PropList,

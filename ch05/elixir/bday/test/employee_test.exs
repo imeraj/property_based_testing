@@ -1,6 +1,7 @@
 defmodule EmployeeTest do
   use ExUnit.Case
   use PropCheck
+  alias Bday.Employee
 
   # Properties
   property "check that leading space is fixed" do
@@ -14,12 +15,33 @@ defmodule EmployeeTest do
   property "check that the date is formatted right" do
     forall map <- raw_employee_map() do
       case Employee.adapt_csv_result_shim(map) do
-        %{"date_of_birth" => %Date{}} ->
+        %{date_of_birth: %Date{}} ->
           true
 
         _ ->
           false
       end
+    end
+  end
+
+  property "check access through handle" do
+    forall maps <- non_empty(list(raw_employee_map())) do
+      handle =
+        maps
+        |> Bday.Csv.encode()
+        |> Bday.Employee.from_csv()
+
+      filtered = Employee.filter_birthday(handle, ~D[1900-01-01])
+      full_list = Employee.fetch(handle)
+
+      for x <- full_list do
+        Employee.first_name(x)
+        Employee.last_name(x)
+        Employee.date_of_birth(x)
+        Employee.email(x)
+      end
+
+      is_list(Employee.fetch(filtered))
     end
   end
 
