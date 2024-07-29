@@ -3,16 +3,24 @@ defmodule Bday do
   Documentation for `Bday`.
   """
 
-  @doc """
-  Hello world.
+  def run(path) do
+    set =
+      path
+      |> File.read!()
+      |> Bday.Employee.from_csv()
+      |> Bday.Employee.filter_birthday(DateTime.to_date(DateTime.utc_now()))
+      |> Bday.Employee.fetch()
 
-  ## Examples
+    for employee <- set do
+      employee
+      |> Bday.MailTpl.full()
+      |> send_email()
+    end
 
-      iex> Bday.hello()
-      :world
+    :ok
+  end
 
-  """
-  def hello do
-    :world
+  defp send_email({to, _, _}) do
+    IO.puts("sent birthday email to #{to}")
   end
 end
