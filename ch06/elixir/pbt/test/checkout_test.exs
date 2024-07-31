@@ -9,6 +9,15 @@ defmodule CheckoutTest do
     end
   end
 
+  property "sums without specials (with metrics)", [:verbose] do
+    forall {item_list, expected_price, price_list} <- item_price_list() do
+      collect(
+        expected_price == Checkout.total(item_list, price_list, []),
+        bucket(length(item_list), 10)
+      )
+    end
+  end
+
   # Generators
   def item_price_list do
     let price_list <- price_list() do
@@ -37,4 +46,7 @@ defmodule CheckoutTest do
       item_list(n - 1, price_list, {[item | item_list], price + expected_price})
     end
   end
+
+  # Helpers
+  defp bucket(n, unit), do: div(n, unit) * unit
 end

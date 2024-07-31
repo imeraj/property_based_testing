@@ -6,6 +6,12 @@ prop_no_special1() ->
   ?FORALL({ItemList, ExpectedPrice, PriceList}, item_price_list(),
     ExpectedPrice =:= checkout:total(ItemList, PriceList, [])).
 
+prop_no_special2() ->
+  ?FORALL({ItemList, ExpectedPrice, PriceList}, item_price_list(),
+    collect(
+      bucket(length(ItemList), 10),
+      ExpectedPrice =:= checkout:total(ItemList, PriceList, []))).
+
 %% Generators
 item_price_list() ->
   ?LET(PriceList, price_list(),
@@ -24,4 +30,6 @@ item_list(N, PriceList, {ItemAcc, ExpectedPrice}) ->
     ?LET({Item, Price}, elements(PriceList),
       item_list(N-1, PriceList, {[Item|ItemAcc], Price + ExpectedPrice})).
 
-
+%% Helpers
+bucket(N, Unit) ->
+  (N div Unit) * Unit.
