@@ -18,8 +18,75 @@ defmodule CheckoutTest do
     end
   end
 
+  property "sums including specials" do
+    forall {item_list, expected_price, prices, specials} <- item_price_special() do
+      expected_price == Checkout.total(item_list, prices, specials)
+    end
+  end
+
   # Generators
-  def item_price_list do
+  defp item_price_special do
+    let price_list <- price_list() do
+      let special_list <- special_list(price_list) do
+        let {{regular_items, regular_expected}, {special_items, special_expected}} <-
+              {regular_gen(price_list, special_list), special_gen(price_list, special_list)} do
+          {Enum.shuffle(regular_items ++ special_items), regular_expected + special_expected,
+           price_list, special_list}
+        end
+      end
+    end
+  end
+
+  defp special_list(price_list) do
+    items = for {name, _} <- price_list, do: name
+
+    let specials <- list({elements(items), choose(2, 5), integer()}) do
+      specials |> Enum.sort() |> Enum.dedup_by(&elem(&1, 0))
+    end
+  end
+
+  defp regular_gen(price_list, special_list) do
+    regular_gen(price_list, special_list, [], 0)
+  end
+
+  defp regular_gen([], _special_list, item_list, total_price) do
+    {item_list, total_price}
+  end
+
+  defp regular_gen([{item, cost} | prices], specials, items, price) do
+    count_gen =
+      case List.keyfind(specials, item, 0) do
+        {_, limit, _} -> choose(0, limit - 1)
+        _ -> non_neg_integer()
+      end
+
+    let count <- count_gen do
+      regular_gen(
+        prices,
+        specials,
+        let(v <- vector(count, item), do: v ++ items),
+        cost * count + price
+      )
+    end
+  end
+
+  defp special_gen(_, special_list) do
+    special_gen(special_list, [], 0)
+  end
+
+  defp special_gen([], items, price), do: {items, price}
+
+  defp special_gen([{item, count, cost} | specials], items, price) do
+    let multiplier <- non_neg_integer() do
+      special_gen(
+        specials,
+        let(v <- vector(count * multiplier, item), do: v ++ items),
+        cost * multiplier + price
+      )
+    end
+  end
+
+  defp item_price_list do
     let price_list <- price_list() do
       let {item_list, expected_price} <- item_list(price_list) do
         {item_list, expected_price, price_list}
