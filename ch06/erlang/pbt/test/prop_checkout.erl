@@ -17,6 +17,16 @@ prop_special() ->
     item_price_special(),
     ExpectedPrice =:= checkout:total(ItemList, PriceList, SpecialList)).
 
+prop_expected_result() ->
+  ?FORALL({ItemList, PriceList, SpecialList}, lax_lists(),
+    try checkout:total(ItemList, PriceList, SpecialList) of
+      N when is_integer(N) -> true
+    catch
+      error:{unknown_item, _} -> true;
+      error:invalid_special_list -> true;
+      _:_ -> false
+    end).
+
 %% Generators
 item_price_special() ->
   ?LET(PriceList, price_list(),
@@ -80,6 +90,13 @@ item_list(0, _PriceList, Acc) -> Acc;
 item_list(N, PriceList, {ItemAcc, ExpectedPrice}) ->
     ?LET({Item, Price}, elements(PriceList),
       item_list(N-1, PriceList, {[Item|ItemAcc], Price + ExpectedPrice})).
+
+lax_lists() ->
+  KnownItems = ["A", "B", "C"],
+  MaybeKnownItemGen = elements(KnownItems ++ [string()]),
+  {list(MaybeKnownItemGen),
+    list({MaybeKnownItemGen, integer()}),
+    list({MaybeKnownItemGen, integer(), integer()})}.
 
 %% Helpers
 bucket(N, Unit) ->

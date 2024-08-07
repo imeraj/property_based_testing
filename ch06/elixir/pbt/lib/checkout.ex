@@ -2,9 +2,18 @@ defmodule Checkout do
   @moduledoc false
 
   def total(item_list, price_list, specials) do
+    if not valid_special_list(specials),
+      do: raise(RuntimeError, message: "invalid list of specials")
+
     counts = count_seen(item_list)
     {counts_left, prices} = apply_specials(counts, specials)
     prices + apply_regular(counts_left, price_list)
+  end
+
+  defp valid_special_list([]), do: true
+
+  defp valid_special_list(specials) do
+    Enum.all?(specials, fn {_, x, _} -> x != 0 end)
   end
 
   defp count_seen(item_list) do
@@ -30,9 +39,15 @@ defmodule Checkout do
   defp apply_regular(items, price_list) do
     Enum.sum(
       for {name, count} <- items do
-        {_, price} = List.keyfind(price_list, name, 0)
-        count * price
+        count * cost_of_item(name, price_list)
       end
     )
+  end
+
+  defp cost_of_item(name, price_list) do
+    case List.keyfind(price_list, name, 0) do
+      nil -> raise RuntimeError, message: "unknown item: #{name}"
+      {_, price} -> price
+    end
   end
 end

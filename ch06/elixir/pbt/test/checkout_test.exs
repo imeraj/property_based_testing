@@ -24,6 +24,21 @@ defmodule CheckoutTest do
     end
   end
 
+  property "negative testing for expected results" do
+    forall {item_list, price_list, special_list} <- lax_lists() do
+      try do
+        is_integer(Checkout.total(item_list, price_list, special_list))
+      rescue
+        e in [RuntimeError] ->
+          String.starts_with?(e.message, "unknown item:") ||
+            e.message == "invalid list of specials"
+
+        _ ->
+          false
+      end
+    end
+  end
+
   # Generators
   defp item_price_special do
     let price_list <- price_list() do
@@ -112,6 +127,14 @@ defmodule CheckoutTest do
     let {item, price} <- elements(price_list) do
       item_list(n - 1, price_list, {[item | item_list], price + expected_price})
     end
+  end
+
+  defp lax_lists() do
+    known_items = ["A", "B", "C"]
+    maybe_known_item_gen = elements(known_items ++ [utf8()])
+
+    {list(maybe_known_item_gen), list({maybe_known_item_gen, integer()}),
+     list({maybe_known_item_gen, integer(), integer()})}
   end
 
   # Helpers
