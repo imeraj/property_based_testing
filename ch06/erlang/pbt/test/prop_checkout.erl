@@ -23,9 +23,15 @@ prop_expected_result() ->
       N when is_integer(N) -> true
     catch
       error:{unknown_item, _} -> true;
+      error:invalid_price_list -> true;
       error:invalid_special_list -> true;
       _:_ -> false
     end).
+
+prop_dupe_list_invalid() ->
+  ?FORALL(PriceList, dupe_list(),
+    false =:= checkout:valid_price_list(PriceList)
+    ).
 
 %% Generators
 item_price_special() ->
@@ -49,12 +55,12 @@ item_price_list() ->
         {ItemList, ExpectedPrice, PriceList})).
 
 price_list() ->
-  ?LET(PriceList, non_empty(list({non_empty(string()), integer()})),
+  ?LET(PriceList, non_empty(list({non_empty(string()), non_neg_integer()})),
     lists:ukeysort(1, PriceList)).
 
 special_list(PriceList) ->
   Items = [Name || {Name, _} <- PriceList],
-  ?LET(Specials, list({elements(Items), choose(2,5), integer()}),
+  ?LET(Specials, list({elements(Items), choose(2,5), non_neg_integer()}),
     lists:ukeysort(1, Specials)).
 
 regular_gen(PriceList, SpecialList) ->
@@ -95,8 +101,12 @@ lax_lists() ->
   KnownItems = ["A", "B", "C"],
   MaybeKnownItemGen = elements(KnownItems ++ [string()]),
   {list(MaybeKnownItemGen),
-    list({MaybeKnownItemGen, integer()}),
-    list({MaybeKnownItemGen, integer(), integer()})}.
+    list({MaybeKnownItemGen, non_neg_integer()}),
+    list({MaybeKnownItemGen, non_neg_integer(), non_neg_integer()})}.
+
+dupe_list() ->
+  ?LET(Items, non_empty(list(string())),
+    vector(length(Items)+1, {elements(Items), non_neg_integer()})).
 
 %% Helpers
 bucket(N, Unit) ->

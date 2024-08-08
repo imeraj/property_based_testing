@@ -2,12 +2,24 @@ defmodule Checkout do
   @moduledoc false
 
   def total(item_list, price_list, specials) do
+    if not valid_price_list(price_list),
+      do: raise(RuntimeError, message: "invalid list of prices")
+
     if not valid_special_list(specials),
       do: raise(RuntimeError, message: "invalid list of specials")
 
     counts = count_seen(item_list)
     {counts_left, prices} = apply_specials(counts, specials)
     prices + apply_regular(counts_left, price_list)
+  end
+
+  def valid_price_list(prices) do
+    unique =
+      prices
+      |> Enum.sort()
+      |> Enum.dedup_by(&elem(&1, 0))
+
+    length(prices) == length(unique)
   end
 
   defp valid_special_list([]), do: true

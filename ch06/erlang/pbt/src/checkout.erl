@@ -1,9 +1,13 @@
 -module(checkout).
--export([total/3]).
+-export([valid_price_list/1, total/3]).
 
 -type item() :: string().
 -type price() :: integer().
 -type special() :: {item(), pos_integer(), price()}.
+
+-spec valid_price_list([{item(), price()}]) -> boolean().
+valid_price_list(PriceList) ->
+  length(PriceList) =:= length(lists:ukeysort(1, PriceList)).
 
 -spec valid_special_list([special()]) -> boolean().
 valid_special_list([]) ->
@@ -13,6 +17,7 @@ valid_special_list(Specials) ->
 
 -spec total([item()], [{item(), price()}], [special()]) -> price().
 total(ItemList, PriceList, Specials) ->
+  valid_price_list(PriceList) orelse error(invalid_price_list),
   valid_special_list(Specials) orelse error(invalid_special_list),
   Counts = count_seen(ItemList),
   {CountsLeft, Prices} = apply_specials(Counts, Specials),

@@ -31,11 +31,18 @@ defmodule CheckoutTest do
       rescue
         e in [RuntimeError] ->
           String.starts_with?(e.message, "unknown item:") ||
-            e.message == "invalid list of specials"
+            e.message == "invalid list of specials" ||
+            e.message == "invalid list of prices"
 
         _ ->
           false
       end
+    end
+  end
+
+  property "list of items with duplicates" do
+    forall price_list <- dupe_list() do
+      false == Checkout.valid_price_list(price_list)
     end
   end
 
@@ -55,7 +62,7 @@ defmodule CheckoutTest do
   defp special_list(price_list) do
     items = for {name, _} <- price_list, do: name
 
-    let specials <- list({elements(items), choose(2, 5), integer()}) do
+    let specials <- list({elements(items), choose(2, 5), non_neg_integer()}) do
       specials |> Enum.sort() |> Enum.dedup_by(&elem(&1, 0))
     end
   end
@@ -110,7 +117,7 @@ defmodule CheckoutTest do
   end
 
   defp price_list do
-    let price_list <- non_empty(list({non_empty(utf8()), integer()})) do
+    let price_list <- non_empty(list({non_empty(utf8()), non_neg_integer()})) do
       price_list
       |> Enum.sort()
       |> Enum.dedup_by(&elem(&1, 0))
@@ -133,8 +140,14 @@ defmodule CheckoutTest do
     known_items = ["A", "B", "C"]
     maybe_known_item_gen = elements(known_items ++ [utf8()])
 
-    {list(maybe_known_item_gen), list({maybe_known_item_gen, integer()}),
-     list({maybe_known_item_gen, integer(), integer()})}
+    {list(maybe_known_item_gen), list({maybe_known_item_gen, non_neg_integer()}),
+     list({maybe_known_item_gen, non_neg_integer(), non_neg_integer()})}
+  end
+
+  defp dupe_list() do
+    let items <- non_empty(list(utf8())) do
+      vector(length(items) + 1, {elements(items), non_neg_integer()})
+    end
   end
 
   # Helpers
