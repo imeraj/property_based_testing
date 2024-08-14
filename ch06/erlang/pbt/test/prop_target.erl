@@ -21,7 +21,37 @@ prop_tree() ->
       true
     end).
 
+prop_tree_neighbour() ->
+  ?FORALL_TARGETED(T, ?USERNF(tree(), next_tree()),
+    begin
+      {Left, Right} = Weight = sides(T),
+      io:format(" ~p", [Weight]),
+      ?MAXIMIZE(Left-Right),
+      true
+    end).
+
+
+%% This one takes long because it does 100 rounds for ?FORALL
+%% and 1000 rounds for ?NOT_EXISTS; this gives 100,000 executions!
+prop_tree_search() ->
+  ?FORALL(L, list(integer()),
+    ?NOT_EXISTS(T,
+      ?USERNF(
+        ?LET(X, L, to_tree(X)),
+        next_tree()
+      ),
+      begin
+        {Left, Right} = Weight = sides(T),
+        ?MAXIMIZE(Left-Right),
+        false
+      end)).
+
 %% Generators
+next_tree() ->
+  fun(OldTree, {_, T}) ->
+    ?LET(N, integer(), insert(trunc(N*T*100), OldTree))
+  end.
+
 tree() ->
   ?LET(L, non_empty(list(integer())), to_tree(L)).
 
