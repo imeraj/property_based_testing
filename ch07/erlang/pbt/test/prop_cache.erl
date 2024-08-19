@@ -33,7 +33,13 @@ precondition(#state{count=0}, {call, cache, flush, []}) ->
 precondition(#state{}, {call, _Mod, _Fun, _Args}) ->
   true.
 
-postcondition(_State, {call, _Mod, _Fun, _Args}, _Res) -> true.
+postcondition(#state{entries=L}, {call, cache, find, [Key]}, Res) ->
+  case lists:keyfind(Key, 1, L) of
+    false -> Res =:= {error, not_found};
+    {Key, Val} -> Res =:= {ok, Val}
+  end;
+postcondition(_State, {call, _Mod, _Fun, _Args}, _Res) ->
+  true.
 
 next_state(State, _Res, {call, cache, flush, _}) ->
   State#state{count=0, entries=[]};

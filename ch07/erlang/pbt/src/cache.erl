@@ -22,7 +22,7 @@ cache(Key, Val) ->
     [] ->
       case ets:lookup(cache, count) of
         [{count, Max, Max}] ->
-          ets:insert(cache, [{1, {Key, Val}}, {count, 0, Max}]);
+          ets:insert(cache, [{1, {Key, Val}}, {count, 1, Max}]);
         [{count, Current, Max}] ->
           ets:insert(cache, [{Current+1, {Key, Val}}, {count, Current+1, Max}])
       end

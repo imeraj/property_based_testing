@@ -41,6 +41,16 @@ defmodule CacheTest do
   def precondition(%State{count: 0}, {:call, Cache, :flush, []}), do: false
   def precondition(%State{}, {:call, _Mod, _fun, _args}), do: true
 
+  def postcondition(%State{entries: l}, {:call, _Mod, :find, [key]}, res) do
+    case List.keyfind(l, key, 0) do
+      nil ->
+        res == {:error, :not_found}
+
+      {^key, val} ->
+        res == {:ok, val}
+    end
+  end
+
   def postcondition(%State{}, {:call, _Mod, _fun, _args}, _res), do: true
 
   def next_state(state, _res, {:call, Cache, :flush, _}),

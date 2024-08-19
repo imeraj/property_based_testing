@@ -31,7 +31,7 @@ defmodule Cache do
       [] ->
         case :ets.lookup(:cache, :count) do
           [{:count, max, max}] ->
-            :ets.insert(:cache, [{1, {key, val}}, {:count, 0, max}])
+            :ets.insert(:cache, [{1, {key, val}}, {:count, 1, max}])
 
           [{:count, current, max}] ->
             :ets.insert(:cache, [
