@@ -8,7 +8,24 @@
 -record(state, {max=?CACHE_SIZE, count=0, entries=[]}).
 
 %% Properties
-prop_test() ->
+prop_parallel() ->
+  ?FORALL(Cmds, parallel_commands(?MODULE),
+    begin
+      cache:start_link(?CACHE_SIZE),
+      {History, State, Result} = run_parallel_commands(?MODULE, Cmds),
+      cache:stop(),
+      ?WHENFAIL(
+        io:format("===============~n"
+            "Failing command sequence:~n~p~n"
+            "At state: ~p~n"
+            "=======~n"
+            "Result: ~p~n"
+            "History: ~p~n",
+            [Cmds,State,Result,History]),
+        aggregate(command_names(Cmds), Result =:= ok))
+    end).
+
+prop_sequential() ->
   ?FORALL(Cmds, commands(?MODULE),
     begin
       cache:start_link(?CACHE_SIZE),
@@ -17,6 +34,7 @@ prop_test() ->
       ?WHENFAIL(io:format("History: ~p\nState: ~p\n Result: ~p\n", [History, State, Result]),
         aggregate(command_names(Cmds), Result =:= ok))
     end).
+
 
 initial_state() ->
   #state{}.

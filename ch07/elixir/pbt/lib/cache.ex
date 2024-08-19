@@ -17,18 +17,26 @@ defmodule Cache do
     end
   end
 
-  def flush() do
-    [{:count, _, max}] = :ets.lookup(:cache, :count)
-    :ets.delete_all_objects(:cache)
-    :ets.insert(:cache, {:count, 0, max})
+  def flush(), do: GenServer.call(__MODULE__, :flush)
+
+  def cache(key, val), do: GenServer.call(__MODULE__, {:cache, key, val})
+
+  # Callbacks
+  def init(n) do
+    :ets.new(:cache, [:public, :named_table])
+    :ets.insert(:cache, {:count, 0, n})
+
+    {:ok, :nostate}
   end
 
-  def cache(key, val) do
+  def handle_call({:cache, key, val}, _from, state) do
     case :ets.match(:cache, {:"$1", {key, :_}}) do
       [[n]] ->
         :ets.insert(:cache, {n, {key, val}})
 
       [] ->
+        :erlang.yield()
+
         case :ets.lookup(:cache, :count) do
           [{:count, max, max}] ->
             :ets.insert(:cache, [{1, {key, val}}, {:count, 1, max}])
@@ -40,17 +48,18 @@ defmodule Cache do
             ])
         end
     end
+
+    {:reply, :ok, state}
   end
 
-  # Callbacks
-  def init(n) do
-    :ets.new(:cache, [:public, :named_table])
-    :ets.insert(:cache, {:count, 0, n})
-
-    {:ok, :nostate}
+  def handle_call(:flush, _from, state) do
+    [{:count, _, max}] = :ets.lookup(:cache, :count)
+    :ets.delete_all_objects(:cache)
+    :erlang.yield()
+    :ets.insert(:cache, {:count, 0, max})
+    {:reply, :ok, state}
   end
 
-  def handle_call(_call, _from, state), do: {:noreply, state}
   def handle_cast(_cast, state), do: {:noreply, state}
   def handle_info(_msg, state), do: {:noreply, state}
 end
