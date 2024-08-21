@@ -1,0 +1,17 @@
+{application, bookstore,
+ [{description, "Handling books and book accessories"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, { bookstore_app, []}},
+  {applications, [kernel, stdlib, eql, pgsql]},
+  {env,[
+   {pg, [
+    {user, "postgres"},
+    {password, "postgres"},
+    {database, "bookstore_db"},
+    {port, 5432},
+    {ssl, false} % not for tests!
+   ]}
+  ]},
+  {modules, []}
+ ]}.
