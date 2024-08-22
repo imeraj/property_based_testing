@@ -1,5 +1,5 @@
 -module(bookstore_db).
--export([load_queries/0, setup/0, teardown/0, add_book/3, add_copy/1, borrow_copy/1,
+-export([load_queries/0, setup/0, teardown/0, add_book/3, add_book/5, add_copy/1, borrow_copy/1,
   return_copy/1, find_book_by_author/1, find_book_by_isbn/1, find_book_by_title/1]).
 
 setup() ->
@@ -12,8 +12,8 @@ add_book(ISBN, Title, Author) ->
   add_book(ISBN, Title, Author, 0, 0).
 
 add_book(ISBN, Title, Author, Owned, Avail) ->
-  BinTitle = iolist_to_binary(Title),
-  BinAuthor = iolist_to_binary(Author),
+  BinTitle = unicode:characters_to_binary(Title),
+  BinAuthor = unicode:characters_to_binary(Author),
   case run_query(add_book, [ISBN, BinTitle, BinAuthor, Owned, Avail]) of
     {{insert,0,1},[]} -> ok;
     {error, Reason} -> {error, Reason};
@@ -31,7 +31,7 @@ return_copy(ISBN) ->
 
 find_book_by_author(Author) ->
   handle_select(
-    run_query(find_by_author, [iolist_to_binary(["%",Author,"%"])])
+    run_query(find_by_author, [unicode:characters_to_binary(["%",Author,"%"])])
   ).
 
 find_book_by_isbn(ISBN) ->
@@ -39,7 +39,7 @@ find_book_by_isbn(ISBN) ->
 
 find_book_by_title(Title) ->
   handle_select(
-    run_query(find_by_title, [iolist_to_binary(["%",Title,"%"])])
+    run_query(find_by_title, [unicode:characters_to_binary(["%",Title,"%"])])
   ).
 
 load_queries() ->
