@@ -18,10 +18,7 @@ VALUES     ($1,   $2,    $3,     $4,    $5       );
 
 -- Add a copy of an existing book
 -- :add_copy
-UPDATE books SET
-owned = owned + 1,
-available = available + 1
-WHERE isbn = $1;
+UPDATE books SET owned = owned + 1, available = available + 1 WHERE isbn = $1;
 
 -- Borrow a copy of a book
 -- :borrow_copy
