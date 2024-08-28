@@ -1,0 +1,4 @@
+[{<<"circuit_breaker">>,
+  {git,"https://github.com/klarna/circuit_breaker.git",
+       {ref,"e64b102b7eacf7bed061dd2fad6ccadb3bd8dca9"}},
+  0}].
